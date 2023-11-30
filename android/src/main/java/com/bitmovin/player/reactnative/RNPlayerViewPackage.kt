@@ -1,5 +1,6 @@
 package com.bitmovin.player.reactnative
 
+import android.util.Log
 import android.view.View
 import com.bitmovin.player.reactnative.ui.CustomMessageHandlerModule
 import com.bitmovin.player.reactnative.ui.FullscreenHandlerModule
@@ -13,6 +14,9 @@ import com.facebook.react.uimanager.ViewManager
  * React package registry.
  */
 class RNPlayerViewPackage : ReactPackage {
+    init {
+        Log.i("RNPlayerViewPackage", "Creating a package.")
+    }
     /**
      * Register `RNPlayerViewManager` as a base react native module. This allows
      * accessing methods on `NativePlayerView` on the js side.
