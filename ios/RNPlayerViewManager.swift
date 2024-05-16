@@ -45,11 +45,22 @@ public class RNPlayerViewManager: RCTViewManager {
                 playerView.player = player
                 previousPictureInPictureAvailableValue = playerView.isPictureInPictureAvailable
             } else {
-                view.playerView = PlayerView(
-                    player: player,
-                    frame: view.bounds,
-                    playerViewConfig: playerViewConfig?.playerViewConfig ?? PlayerViewConfig()
-                )
+                let playerView: PlayerView
+                
+                if player.config.styleConfig.userInterfaceType == .system {
+                    playerView = iOSNativePlayView(
+                        player: player,
+                        frame: view.bounds,
+                        playerViewConfig: playerViewConfig?.playerViewConfig ?? PlayerViewConfig()
+                    )
+                } else {
+                    playerView = PlayerView(
+                        player: player,
+                        frame: view.bounds,
+                        playerViewConfig: playerViewConfig?.playerViewConfig ?? PlayerViewConfig()
+                    )
+                }
+                view.playerView = playerView
                 previousPictureInPictureAvailableValue = false
             }
             player.add(listener: view)
@@ -210,5 +221,89 @@ public class RNPlayerViewManager: RCTViewManager {
             "timestamp": Date().timeIntervalSince1970
         ]
         view.onBmpPictureInPictureAvailabilityChanged?(event)
+    }
+}
+
+
+import Combine
+class iOSNativePlayView: PlayerView {
+    @objc var fullscreenButton: UIButton?
+    @objc var avPlayerView: UIView?
+    var fullScreen: Bool = false
+
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        guard let avPlayerView = avPlayerView, fullscreenButton == nil else { return }
+        setFullScreenButton(in: avPlayerView)
+    }
+    
+    public override func didAddSubview(_ subview: UIView) {
+        if (NSStringFromClass(type(of: subview)) == "AVPlayerView") {
+            avPlayerView = subview
+        }
+        
+        super.didAddSubview(subview)
+    }
+    
+    private func setFullScreenButton(in view: UIView) {
+        for subview in view.subviews {
+            if NSStringFromClass(type(of: subview)) == "AVButton" {
+                if let avButton = subview as? UIButton, isFullScreenButton(avButton)  {
+                    fullscreenButton = avButton
+                    avButton.addTarget(self, action: #selector(fullScreenButtonWasPressed), for: .touchUpInside)
+                    return
+                }
+            }
+            
+            setFullScreenButton(in: subview)
+        }
+    }
+    
+    private func isFullScreenButton(_ button: UIButton) -> Bool {
+        for target in button.allTargets {
+            if let actions = button.actions(forTarget: target, forControlEvent: .touchUpInside) {
+                if actions.contains("fullScreenButtonWasPressed") {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    @objc func fullScreenButtonWasPressed() {
+        fullScreen.toggle()
+        fullScreen ? enterFullscreen():exitFullscreen()
+    }
+    
+    public override init(player: Player, frame: CGRect, playerViewConfig: PlayerViewConfig) {
+        super.init(player: player, frame: frame, playerViewConfig: playerViewConfig)
+        NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged(_:)), name: UIDevice.orientationDidChangeNotification, object: nil)
+    }
+  
+    
+    @objc func orientationChanged(_ notification: Notification) {
+        guard fullScreen == false, fullscreenButton != nil else { return }
+        let deviceOrientation = UIDevice.current.orientation
+
+        if deviceOrientation.isLandscape {
+            fullscreenButton?.sendActions(for: .touchUpInside)
+        }
+    }
+
+    
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        
+        if self.window != nil {
+            if fullScreen {
+                fullScreen = false
+                exitFullscreen()
+            }
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
     }
 }
