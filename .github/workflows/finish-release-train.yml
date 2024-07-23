@@ -48,7 +48,7 @@ jobs:
 
       - name: Commit changelog version bump
         run: |
-          git add CHANGELOG.md
+          git add CHANGELOG.md example/ios/BitmovinPlayerReactNativeExample.xcodeproj/project.pbxproj integration_test/ios/IntegrationTest.xcodeproj/project.pbxproj
           git commit -m "bump changelog date to today"
           git push origin ${{ github.ref }}
 
