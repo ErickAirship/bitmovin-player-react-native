@@ -1,6 +1,65 @@
 # Changelog
 
-## [0.23.0] (2024-05-08)
+## [0.27.1] - 2024-07-05
+
+### Fixed
+
+- `player.setMaxSelectableBitrate(null)` does not reset the maximum selectable bitrate on iOS and tvOS
+- Building with Xcode 16 beta due to negative integer overflow error with `UInt` type
+
+## [0.27.0] - 2024-06-21
+
+### Changed
+
+- Update Google IMA SDK dependencies to `3.23.0` for iOS, and to `4.13.0` for tvOS
+- Update example app dependency: Google Cast iOS sender SDK to `4.8.1`
+- Update Bitmovin's native Android SDK version to `3.74.0`
+- Update Bitmovin's native iOS SDK version to `3.66.0`
+
+## [0.26.0] - 2024-06-14
+
+### Added
+
+- Support for `Player.setVideoQuality()` API to enable video quality selection on Android
+
+### Changed
+
+- Update Bitmovin's native Android SDK version to `3.73.0`
+- Update Bitmovin's native iOS SDK version to `3.65.0`
+
+### Fixed
+
+- Missing parameter documentations in the API reference
+
+## [0.25.0] - 2024-06-07
+
+### Added
+
+- `viewRef` property to `PlayerView` to allow setting a reference to the native view
+
+### Fixed
+
+- iOS: Possible crash on hot-reload
+
+## [0.24.0] - 2024-06-04
+
+### Added
+
+- `NetworkConfig` to configure the network request manipulation functionality
+  - `preprocessHttpRequest(type, request) => Promise<HttpRequest>` to pre-process an HTTP request before the request is executed by the player
+  - `preprocessHttpResponse(type, response) => Promise<HttpResponse>` to pre-process an HTTP response before it gets passed to the player
+
+### Changed
+
+- Update Bitmovin's native Android SDK version to `3.72.0`
+- Update Bitmovin's native iOS SDK version to `3.64.0`
+
+### Fixed
+
+- Android: Can't create a new Player with an existing NativeID (to bind to the same native Player)
+- iOS: Performance problem with large WebVTT thumbnail or subtitle tracks
+
+## [0.23.0] - 2024-05-08
 
 ### Changed
 
@@ -11,7 +70,7 @@
 
 - Android: Player Web UI freezing sometimes, under excessive WebUI-RN code messaging
 
-## [0.22.0] (2024-04-15)
+## [0.22.0] - 2024-04-15
 
 ### Added
 
@@ -22,7 +81,7 @@
 - Update Bitmovin's native iOS SDK version to `3.60.0`
 - Update IMA SDK dependency on iOS to `3.19.1`, respectively `4.9.2` for tvOS
 
-## [0.21.0] (2024-04-08)
+## [0.21.0] - 2024-04-08
 
 ### Fixed
 
@@ -35,7 +94,7 @@
 - Update Bitmovin's native Android SDK version to `3.65.0`
 - Update Bitmovin's native iOS SDK version to `3.59.0`
 
-## [0.20.0] (2024-03-29)
+## [0.20.0] - 2024-03-29
 
 ### Added
 
@@ -46,7 +105,7 @@
 
 - Update Bitmovin's native Android SDK version to `3.64.0`
 
-## [0.19.0] (2024-03-22)
+## [0.19.0] - 2024-03-22
 
 ### Added
 
@@ -61,7 +120,7 @@
 
 - Fix potential event name conflicts with other 3rd party libraries
 
-## [0.18.0] (2024-03-06)
+## [0.18.0] - 2024-03-06
 
 ### Changed
 
@@ -73,7 +132,7 @@
 
 - Android: Subtitles appear out of frame
 
-## [0.17.0] (2024-01-26)
+## [0.17.0] - 2024-01-26
 
 ### Added
 
@@ -87,14 +146,14 @@
 
 - Remove `patch-package` usage from released product
 
-## [0.16.0] (2024-01-17)
+## [0.16.0] - 2024-01-17
 
 ### Changed
 
 - Update Bitmovin's native Android SDK version to `3.56.0`
 - Android: Kotlin version to `1.9.21`
 
-## [0.15.0] (2023-12-18)
+## [0.15.0] - 2023-12-18
 
 ### Added
 
@@ -107,7 +166,7 @@
 - Update Bitmovin's native Android SDK version to `3.54.0`
 - Android: Kotlin version to `1.8.20`
 
-## [0.14.2] (2023-11-27)
+## [0.14.2] - 2023-11-27
 
 ### Fixed
 
@@ -117,13 +176,13 @@
 - iOS: hide home indicator when entering fullscreen mode in the example application
 - iOS: invalid `loadingState` value in `SeekEvent`, `SourceLoadEvent`, `SourceLoadedEvent` and in `SourceUnloadedEvent`
 
-## [0.14.1] (2023-11-16)
+## [0.14.1] - 2023-11-16
 
 ### Fixed
 
 - Android: `PlayerView` destroys attached `Player` instance on destroy. `Player` lifecycle must be handled on the creation side
 
-## [0.14.0] (2023-11-14)
+## [0.14.0] - 2023-11-14
 
 ### Added
 
@@ -139,7 +198,7 @@
 - Android: Playback doesn't pause when app goes to background
 - Android: `PlayerView.onDestroy` not being called when the view is detached from the view hierarchy
 
-## [0.13.0] (2023-10-20)
+## [0.13.0] - 2023-10-20
 
 ### Added
 
@@ -162,7 +221,7 @@
 
 - `PlaybackConfig.isPictureInPictureEnabled` in favor of `PictureInPictureConfig.isEnabled`
 
-## [0.12.0] (2023-09-25)
+## [0.12.0] - 2023-09-25
 
 ### Added
 
@@ -182,7 +241,7 @@
 - `AnalyticsCollector` in favor of the bundled analytics functionality
 - `CdnProvider`, as the property on the `AnalyticsConfig` is now a `string`
 
-## [0.11.0] (2023-09-11)
+## [0.11.0] - 2023-09-11
 
 ### Added
 
@@ -194,7 +253,7 @@
 
 - Update Bitmovin's native Android SDK version to `3.43.0`
 
-## [0.10.0] (2023-09-04)
+## [0.10.0] - 2023-09-04
 
 ### Added
 
@@ -203,19 +262,19 @@
 - `PlayerConfig.adaptationConfig` to allow configuring the player's adaptation behavior
 - `Player.setMaxSelectableBitrate` to allow setting the maximum selectable bitrate on the `Player`
 
-## [0.9.2] (2023-08-24)
+## [0.9.2] - 2023-08-24
 
 ### Changed
 
 - Update Bitmovin's native iOS SDK version to `3.43.1`
 
-## [0.9.1] (2023-08-17)
+## [0.9.1] - 2023-08-17
 
 ### Fixed
 
 - Android: Player sometimes plays sound but doesn't display video nor controls.
 
-## [0.9.0] (2023-08-11)
+## [0.9.0] - 2023-08-11
 
 ### Added
 
@@ -231,7 +290,7 @@
 
 - Android: Player sometimes plays sound but no video
 
-## [0.8.0] (2023-07-31)
+## [0.8.0] - 2023-07-31
 
 ### Added
 
@@ -248,13 +307,13 @@
 
 - Android: Sporadic black screen after initialization
 
-## [0.7.2] (2023-07-03)
+## [0.7.2] - 2023-07-03
 
 ### Fixed
 
 - Android: None of the Player Web UI menu items work (anything that triggers a native UI pop up)
 
-## [0.7.1] (2023-06-29)
+## [0.7.1] - 2023-06-29
 
 ### Added
 
@@ -264,7 +323,7 @@
 
 - Project forces the usage of specific `react-native` version
 
-## [0.7.0] (2023-06-26)
+## [0.7.0] - 2023-06-26
 
 ### Added
 
@@ -275,7 +334,7 @@
 
 - Android module build issues
 
-## [0.6.0] (2023-03-27)
+## [0.6.0] - 2023-03-27
 
 ### Added
 
@@ -288,13 +347,13 @@
 - Update Bitmovin's native iOS SDK version to `v3.36.0`.
 - Update Bitmovin's native Android SDK version to `v3.35.0`.
 
-## [0.5.1] (2023-01-23)
+## [0.5.1] - 2023-01-23
 
 ### Fixed
 
 - Fix missing export of `FullscreenHandler` to allow fullscreen support to be integrated.
 
-## [0.5.0] (2023-01-13)
+## [0.5.0] - 2023-01-13
 
 This version introduces analytics integration, fullscreen support and customizing the Player UI.
 
@@ -304,7 +363,7 @@ This version introduces analytics integration, fullscreen support and customizin
 - `FullscreenHandler` support.
 - Bitmovin Player Web UI customization via `styleConfig` property on player creation.
 
-## [0.4.0] (2022-11-24)
+## [0.4.0] - 2022-11-24
 
 This version introduces the advertising API, full Picture in Picture support and exposes Stall events.
 
@@ -314,7 +373,7 @@ This version introduces the advertising API, full Picture in Picture support and
 - Complete Picture in Picture support.
 - `onStallStarted`/`onStallEnded` events support. (Thanks to @joornby-angel)
 
-## [0.3.1] (2022-10-26)
+## [0.3.1] - 2022-10-26
 
 Adds tweaks configuration support.
 
@@ -322,7 +381,7 @@ Adds tweaks configuration support.
 
 - Support for setting `TweaksConfig` on both Android and iOS.
 
-## [0.3.0] (2022-10-13)
+## [0.3.0] - 2022-10-13
 
 Adds support for tvOS projects and ability to customize the default playback behavior of `Player` objects.
 
@@ -341,7 +400,7 @@ Adds support for tvOS projects and ability to customize the default playback beh
 
 - Fix pod installation error on tvOS projects by adding `:tvos => 12.4` to the list of supported platforms.
 
-## [0.2.1] (2022-09-19)
+## [0.2.1] - 2022-09-19
 
 Fixes an NPM installation issue.
 
@@ -349,7 +408,7 @@ Fixes an NPM installation issue.
 
 - Fix installation error caused by wrong husky setup when fetching package from NPM.
 
-## [0.2.0] (2022-08-23)
+## [0.2.0] - 2022-08-23
 
 Adds support for DRM playback on Android (Widevine only) and iOS (FairPlay only), as well as configuring
 external subtitle tracks for a stream source.
@@ -369,7 +428,7 @@ external subtitle tracks for a stream source.
 
 - Fix error caused when navigating back from screens containing a `PlayerView` child.
 
-## [0.1.0] (2022-07-11)
+## [0.1.0] - 2022-07-11
 
 Adds support for basic playback using Bitmovin's Web UI as the default (and only) player UI.
 No support for custom UI yet.

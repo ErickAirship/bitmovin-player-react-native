@@ -23,6 +23,15 @@ public class PlayerModule: NSObject, RCTBridgeModule { // swiftlint:disable:this
         bridge.uiManager.methodQueue
     }
 
+    deinit {
+        // Destroy all players on the main thread when the module is deallocated.
+        // This is necessary when the IMA SDK is present in the app, as it may crash if the players are destroyed on a
+        // background thread.
+        DispatchQueue.main.async { [players] in
+            players.values.forEach { $0.destroy() }
+        }
+    }
+
     /**
      Fetches the `Player` instance associated with `nativeId` from the internal players.
      - Parameter nativeId: `Player` instance ID.
@@ -37,8 +46,12 @@ public class PlayerModule: NSObject, RCTBridgeModule { // swiftlint:disable:this
      Creates a new `Player` instance inside the internal players using the provided `config` object.
      - Parameter config: `PlayerConfig` object received from JS.
      */
-    @objc(initWithConfig:config:)
-    func initWithConfig(_ nativeId: NativeId, config: Any?) {
+    @objc(initWithConfig:config:networkNativeId:)
+    func initWithConfig(
+        _ nativeId: NativeId,
+        config: Any?,
+        networkNativeId: NativeId?
+    ) {
         bridge.uiManager.addUIBlock { [weak self] _, _ in
             guard
                 self?.players[nativeId] == nil,
@@ -49,6 +62,10 @@ public class PlayerModule: NSObject, RCTBridgeModule { // swiftlint:disable:this
 #if os(iOS)
             self?.setupRemoteControlConfig(playerConfig.remoteControlConfig)
 #endif
+            if let networkNativeId,
+               let networkConfig = self?.setupNetworkConfig(nativeId: networkNativeId) {
+                playerConfig.networkConfig = networkConfig
+            }
             self?.players[nativeId] = PlayerFactory.create(playerConfig: playerConfig)
         }
     }
@@ -59,8 +76,13 @@ public class PlayerModule: NSObject, RCTBridgeModule { // swiftlint:disable:this
      - Parameter config: `PlayerConfig` object received from JS.
      - Parameter analyticsConfig: `AnalyticsConfig` object received from JS.
      */
-    @objc(initWithAnalyticsConfig:config:analyticsConfig:)
-    func initWithAnalyticsConfig(_ nativeId: NativeId, config: Any?, analyticsConfig: Any?) {
+    @objc(initWithAnalyticsConfig:config:networkNativeId:analyticsConfig:)
+    func initWithAnalyticsConfig(
+        _ nativeId: NativeId,
+        config: Any?,
+        networkNativeId: NativeId?,
+        analyticsConfig: Any?
+    ) {
         bridge.uiManager.addUIBlock { [weak self] _, _ in
             let analyticsConfigJson = analyticsConfig
             guard
@@ -73,6 +95,10 @@ public class PlayerModule: NSObject, RCTBridgeModule { // swiftlint:disable:this
 #if os(iOS)
             self?.setupRemoteControlConfig(playerConfig.remoteControlConfig)
 #endif
+            if let networkNativeId,
+               let networkConfig = self?.setupNetworkConfig(nativeId: networkNativeId) {
+                playerConfig.networkConfig = networkConfig
+            }
             let defaultMetadata = RCTConvert.analyticsDefaultMetadataFromAnalyticsConfig(analyticsConfigJson)
             self?.players[nativeId] = PlayerFactory.create(
                 playerConfig: playerConfig,
@@ -593,10 +619,10 @@ public class PlayerModule: NSObject, RCTBridgeModule { // swiftlint:disable:this
      */
     @objc(setMaxSelectableBitrate:maxSelectableBitrate:)
     func setMaxSelectableBitrate(_ nativeId: NativeId, maxSelectableBitrate: NSNumber) {
-        let maxSelectableBitrateValue = maxSelectableBitrate.uintValue
+        let maxSelectableBitrateValue = maxSelectableBitrate.intValue
         bridge.uiManager.addUIBlock { [weak self] _, _ in
             let maxSelectableBitrate = maxSelectableBitrateValue != -1 ? maxSelectableBitrateValue : 0
-            self?.players[nativeId]?.maxSelectableBitrate = maxSelectableBitrate
+            self?.players[nativeId]?.maxSelectableBitrate = UInt(maxSelectableBitrate)
         }
     }
 
@@ -685,6 +711,14 @@ public class PlayerModule: NSObject, RCTBridgeModule { // swiftlint:disable:this
 
             return castSourceConfig
         }
+    }
+
+    private func setupNetworkConfig(nativeId: NativeId) -> NetworkConfig? {
+        guard let networkModule = bridge[NetworkModule.self],
+              let networkConfig = networkModule.retrieve(nativeId) else {
+            return nil
+        }
+        return networkConfig
     }
 
     /**
