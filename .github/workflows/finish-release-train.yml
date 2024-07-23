@@ -107,11 +107,6 @@ jobs:
       - name: Build TypeScript files
         run: yarn build
 
-      - name: Publish npm package
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Extract changelog
         id: changelog
         uses: ffurrer2/extract-release-notes@v1
