@@ -299,3 +299,4 @@ class RNPlayerViewManager(private val context: ReactApplicationContext) : Simple
         }
     }
 }
+
