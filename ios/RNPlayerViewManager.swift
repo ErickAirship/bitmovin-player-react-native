@@ -1,21 +1,23 @@
 import BitmovinPlayer
 import Foundation
 
+
 @objc(RNPlayerViewManager)
 public class RNPlayerViewManager: RCTViewManager {
+    static var isFullScreen = false
     /// Initialize module on main thread.
     override public static func requiresMainQueueSetup() -> Bool {
         true
     }
-
+    
     /// `UIView` factory function. It gets called for each `<NativePlayerView />` component
     /// from React.
     override public func view() -> UIView! { // swiftlint:disable:this implicitly_unwrapped_optional
         RNPlayerView()
     }
-
+    
     private var customMessageHandlerBridgeId: NativeId?
-
+    
     /**
      Sets the `Player` instance for the view with `viewId` inside RN's `UIManager` registry.
      - Parameter viewId: `RNPlayerView` id inside `UIManager`'s registry.
@@ -32,14 +34,14 @@ public class RNPlayerViewManager: RCTViewManager {
                 return
             }
             let playerViewConfig = RCTConvert.rnPlayerViewConfig(view.config)
-
+            
             if let userInterfaceConfig = maybeCreateUserInterfaceConfig(
                 styleConfig: player.config.styleConfig,
                 playerViewConfig: playerViewConfig
             ) {
-              player.config.styleConfig.userInterfaceConfig = userInterfaceConfig
+                player.config.styleConfig.userInterfaceConfig = userInterfaceConfig
             }
-
+            
             let previousPictureInPictureAvailableValue: Bool
             if let playerView = view.playerView {
                 playerView.player = player
@@ -65,14 +67,14 @@ public class RNPlayerViewManager: RCTViewManager {
             }
             player.add(listener: view)
             view.playerView?.add(listener: view)
-
+            
             self.maybeEmitPictureInPictureAvailabilityEvent(
                 for: view,
                 previousState: previousPictureInPictureAvailableValue
             )
         }
     }
-
+    
     private func maybeCreateUserInterfaceConfig(
         styleConfig: StyleConfig,
         playerViewConfig: RNPlayerViewConfig?
@@ -81,7 +83,7 @@ public class RNPlayerViewManager: RCTViewManager {
         if styleConfig.userInterfaceType == .bitmovin {
             let bitmovinUserInterfaceConfig = styleConfig
                 .userInterfaceConfig as? BitmovinUserInterfaceConfig ?? BitmovinUserInterfaceConfig()
-
+            
             if let uiConfig = playerViewConfig?.uiConfig {
                 bitmovinUserInterfaceConfig
                     .playbackSpeedSelectionEnabled = uiConfig.playbackSpeedSelectionEnabled
@@ -89,30 +91,31 @@ public class RNPlayerViewManager: RCTViewManager {
             if let hideFirstFrame = playerViewConfig?.hideFirstFrame {
                 bitmovinUserInterfaceConfig.hideFirstFrame = hideFirstFrame
             }
-
+            
             if let customMessageHandlerBridgeId = self.customMessageHandlerBridgeId,
                let customMessageHandlerBridge = self.bridge[CustomMessageHandlerModule.self]?
                 .retrieve(customMessageHandlerBridgeId) {
                 bitmovinUserInterfaceConfig.customMessageHandler = customMessageHandlerBridge.customMessageHandler
             }
-
+            
             return bitmovinUserInterfaceConfig
         }
 #endif
         if styleConfig.userInterfaceType == .system {
             let systemUserInterfaceConfig = styleConfig
                 .userInterfaceConfig as? SystemUserInterfaceConfig ?? SystemUserInterfaceConfig()
-
+            
             if let hideFirstFrame = playerViewConfig?.hideFirstFrame {
                 systemUserInterfaceConfig.hideFirstFrame = hideFirstFrame
             }
-
+            
+            
             return systemUserInterfaceConfig
         }
-
+        
         return nil
     }
-
+    
     @objc
     func attachFullscreenBridge(_ viewId: NSNumber, fullscreenBridgeId: NativeId) {
         bridge.uiManager.addUIBlock { [weak self] _, views in
@@ -125,39 +128,39 @@ public class RNPlayerViewManager: RCTViewManager {
             guard let playerView = view.playerView else {
                 return
             }
-
+            
             playerView.fullscreenHandler = fullscreenBridge
         }
     }
-
+    
     @objc
     func setCustomMessageHandlerBridgeId(_ viewId: NSNumber, customMessageHandlerBridgeId: NativeId) {
         self.customMessageHandlerBridgeId = customMessageHandlerBridgeId
     }
-
+    
     @objc
     func setFullscreen(_ viewId: NSNumber, isFullscreen: Bool) {
         bridge.uiManager.addUIBlock { [weak self] _, views in
-            guard
-                let self,
-                let view = views?[viewId] as? RNPlayerView,
-                let playerView = view.playerView else {
+            
+            guard let view = views?[viewId] as? RNPlayerView,
+                  let playerView = view.playerView, type(of: playerView) == iOSNativePlayView.self else {
                 return
             }
-            guard playerView.isFullscreen != isFullscreen else {
+            
+            guard isFullscreen != RNPlayerViewManager.isFullScreen else {
                 return
             }
-            if isFullscreen {
-                playerView.enterFullscreen()
-            } else {
-                playerView.exitFullscreen()
+            
+            if let iOSNativePlayView = playerView as? iOSNativePlayView {
+                iOSNativePlayView.fullscreenButton?.sendActions(for: .touchUpInside)
             }
         }
     }
-
+    
     @objc
     func setPictureInPicture(_ viewId: NSNumber, enterPictureInPicture: Bool) {
         bridge.uiManager.addUIBlock { [weak self] _, views in
+            
             guard
                 let self,
                 let view = views?[viewId] as? RNPlayerView,
@@ -174,7 +177,7 @@ public class RNPlayerViewManager: RCTViewManager {
             }
         }
     }
-
+    
     @objc
     func setScalingMode(_ viewId: NSNumber, scalingMode: String) {
         bridge.uiManager.addUIBlock { [weak self] _, views in
@@ -199,17 +202,17 @@ public class RNPlayerViewManager: RCTViewManager {
             }
         }
     }
-
+    
     /// Fetches the initialized `PlayerModule` instance on RN's bridge object.
     private func getPlayerModule() -> PlayerModule? {
         bridge.module(for: PlayerModule.self) as? PlayerModule
     }
-
+    
     /// Fetches the initialized `FullscreenHandlerModule` instance on RN's bridge object.
     private func getFullscreenHandlerModule() -> FullscreenHandlerModule? {
         bridge.module(for: FullscreenHandlerModule.self) as? FullscreenHandlerModule
     }
-
+    
     private func maybeEmitPictureInPictureAvailabilityEvent(for view: RNPlayerView, previousState: Bool) {
         guard let playerView = view.playerView,
               playerView.isPictureInPictureAvailable != previousState else {
@@ -230,10 +233,10 @@ class iOSNativePlayView: PlayerView {
     @objc var fullscreenButton: UIButton?
     @objc var avPlayerView: UIView?
     var fullScreen: Bool = false
-
+    var isFromRN: Bool = false
+    
     public override func layoutSubviews() {
         super.layoutSubviews()
-        
         guard let avPlayerView = avPlayerView, fullscreenButton == nil else { return }
         setFullScreenButton(in: avPlayerView)
     }
@@ -272,39 +275,24 @@ class iOSNativePlayView: PlayerView {
     }
     
     @objc func fullScreenButtonWasPressed() {
-        fullScreen.toggle()
-        fullScreen ? enterFullscreen():exitFullscreen()
-    }
-    
-    public override init(player: Player, frame: CGRect, playerViewConfig: PlayerViewConfig) {
-        super.init(player: player, frame: frame, playerViewConfig: playerViewConfig)
-        NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged(_:)), name: UIDevice.orientationDidChangeNotification, object: nil)
-    }
-  
-    
-    @objc func orientationChanged(_ notification: Notification) {
-        guard fullScreen == false, fullscreenButton != nil else { return }
-        let deviceOrientation = UIDevice.current.orientation
-
-        if deviceOrientation.isLandscape {
-            fullscreenButton?.sendActions(for: .touchUpInside)
+        print("fullScreenButtonWasPressed isFullscreen \(RNPlayerViewManager.isFullScreen)")
+        
+        RNPlayerViewManager.isFullScreen.toggle()
+        if RNPlayerViewManager.isFullScreen {
+            enterFullscreen()
+        } else {
+            exitFullscreen()
         }
     }
-
-    
+    // Edge case where user drags to dismiss
     override func didMoveToWindow() {
         super.didMoveToWindow()
         
         if self.window != nil {
-            if fullScreen {
-                fullScreen = false
+            if RNPlayerViewManager.isFullScreen {
+                RNPlayerViewManager.isFullScreen = false
                 exitFullscreen()
             }
         }
     }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
-    }
 }
-
