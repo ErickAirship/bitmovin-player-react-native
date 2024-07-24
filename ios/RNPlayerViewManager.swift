@@ -1,8 +1,10 @@
 import BitmovinPlayer
 import Foundation
 
+
 @objc(RNPlayerViewManager)
 public class RNPlayerViewManager: RCTViewManager {
+    static var isFullScreen = false
     /// Initialize module on main thread.
     override public static func requiresMainQueueSetup() -> Bool {
         true
@@ -106,7 +108,8 @@ public class RNPlayerViewManager: RCTViewManager {
             if let hideFirstFrame = playerViewConfig?.hideFirstFrame {
                 systemUserInterfaceConfig.hideFirstFrame = hideFirstFrame
             }
-
+            
+           
             return systemUserInterfaceConfig
         }
 
@@ -138,26 +141,29 @@ public class RNPlayerViewManager: RCTViewManager {
     @objc
     func setFullscreen(_ viewId: NSNumber, isFullscreen: Bool) {
         bridge.uiManager.addUIBlock { [weak self] _, views in
-            guard
-                let self,
-                let view = views?[viewId] as? RNPlayerView,
+
+            guard let view = views?[viewId] as? RNPlayerView,
                 let playerView = view.playerView else {
                 return
             }
-            guard playerView.isFullscreen != isFullscreen else {
+            
+            guard isFullscreen != RNPlayerViewManager.isFullScreen else {
                 return
             }
-            if isFullscreen {
-                playerView.enterFullscreen()
-            } else {
-                playerView.exitFullscreen()
+
+            if let iOSNativePlayView = playerView as? iOSNativePlayView {
+                DispatchQueue.main.async {
+                    iOSNativePlayView.fullscreenButton?.sendActions(for: .touchUpInside)
+                }
             }
+           
         }
     }
 
     @objc
     func setPictureInPicture(_ viewId: NSNumber, enterPictureInPicture: Bool) {
         bridge.uiManager.addUIBlock { [weak self] _, views in
+            
             guard
                 let self,
                 let view = views?[viewId] as? RNPlayerView,
@@ -233,7 +239,6 @@ class iOSNativePlayView: PlayerView {
 
     public override func layoutSubviews() {
         super.layoutSubviews()
-        
         guard let avPlayerView = avPlayerView, fullscreenButton == nil else { return }
         setFullScreenButton(in: avPlayerView)
     }
@@ -272,39 +277,13 @@ class iOSNativePlayView: PlayerView {
     }
     
     @objc func fullScreenButtonWasPressed() {
-        fullScreen.toggle()
-        fullScreen ? enterFullscreen():exitFullscreen()
-    }
-    
-    public override init(player: Player, frame: CGRect, playerViewConfig: PlayerViewConfig) {
-        super.init(player: player, frame: frame, playerViewConfig: playerViewConfig)
-        NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged(_:)), name: UIDevice.orientationDidChangeNotification, object: nil)
-    }
-  
-    
-    @objc func orientationChanged(_ notification: Notification) {
-        guard fullScreen == false, fullscreenButton != nil else { return }
-        let deviceOrientation = UIDevice.current.orientation
-
-        if deviceOrientation.isLandscape {
-            fullscreenButton?.sendActions(for: .touchUpInside)
-        }
-    }
-
-    
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
+        print("fullScreenButtonWasPressed isFullscreen \(RNPlayerViewManager.isFullScreen)")
         
-        if self.window != nil {
-            if fullScreen {
-                fullScreen = false
-                exitFullscreen()
-            }
+        RNPlayerViewManager.isFullScreen.toggle()
+        if RNPlayerViewManager.isFullScreen {
+            enterFullscreen()
+        } else {
+            exitFullscreen()
         }
-    }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
     }
 }
-
