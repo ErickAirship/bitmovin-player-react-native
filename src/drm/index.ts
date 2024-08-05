@@ -5,7 +5,7 @@ import { FairplayConfig } from './fairplayConfig';
 import { WidevineConfig } from './widevineConfig';
 
 // Export config types from DRM module.
-export { FairplayConfig, WidevineConfig };
+export type { FairplayConfig, WidevineConfig };
 
 const DrmModule = NativeModules.DrmModule;
 

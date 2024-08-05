@@ -9,7 +9,7 @@ import {
 } from './networkConfig';
 
 // Export config types from Network module.
-export { HttpRequestType, HttpRequest, HttpResponse, NetworkConfig };
+export type { HttpRequestType, HttpRequest, HttpResponse, NetworkConfig };
 
 const NetworkModule = NativeModules.NetworkModule;
 

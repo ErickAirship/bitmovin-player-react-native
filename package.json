@@ -65,7 +65,7 @@
     "@react-native-community/eslint-config": "3.1.0",
     "@react-native/babel-preset": "0.73.18",
     "@types/jest": "^28.1.2",
-    "@types/lodash.omit": "4.5.0",
+    "@types/lodash.omit": "^4.5.9",
     "@types/react": "~18.2.26",
     "babel-plugin-module-resolver": "5.0.0",
     "eslint": "8.24.0",
